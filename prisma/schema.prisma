@@ -1,0 +1,158 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Settings {
+  id        Int       @id @default(1)
+  startDate DateTime?
+  xp        Int       @default(0)
+  updatedAt DateTime  @updatedAt
+}
+
+model Phase {
+  id        Int    @id @default(autoincrement())
+  name      String @unique
+  badge     String
+  sortOrder Int
+  weeks     Week[]
+}
+
+model Week {
+  id              Int              @id @default(autoincrement())
+  weekNumber      Int              @unique
+  title           String
+  goal            String
+  saasEvolution   String
+  isComplete      Boolean          @default(false)
+  hoursLogged     Float?
+  note            String?
+  phaseId         Int
+  phase           Phase            @relation(fields: [phaseId], references: [id])
+  days            Day[]
+  tags            WeekTag[]
+  buildLogEntry   BuildLogEntry?
+  reviewResponses ReviewResponse[]
+  bookmarks       Bookmark[]
+  reviewReminders ReviewReminder[]
+}
+
+model Day {
+  id            Int        @id @default(autoincrement())
+  dayLabel      String
+  learnTask     String
+  buildTask     String
+  sortOrder     Int
+  isComplete    Boolean    @default(false)
+  learnComplete Boolean    @default(false)
+  buildComplete Boolean    @default(false)
+  skipped       Boolean    @default(false)
+  confidence    Int?
+  completedAt   DateTime?
+  note          String?
+  reflection    String?
+  weekId        Int
+  week          Week       @relation(fields: [weekId], references: [id])
+  taskItems     TaskItem[]
+
+  @@unique([weekId, sortOrder])
+}
+
+model TaskItem {
+  id            Int      @id @default(autoincrement())
+  title         String
+  category      String   // "learn" or "build"
+  isComplete    Boolean  @default(false)
+  sortOrder     Int
+  timeEstimate  Int?     // minutes, nullable
+  note          String?  // max 500 chars, enforced at API level
+  resourceUrl   String?
+  priority      String?  // "easy", "medium", "hard", or null
+  actualMinutes Int?
+  createdAt     DateTime @default(now())
+  dayId         Int
+  day           Day      @relation(fields: [dayId], references: [id])
+
+  @@index([dayId, category, sortOrder])
+}
+
+model Tag {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  weeks     WeekTag[]
+  bookmarks Bookmark[]
+}
+
+model WeekTag {
+  weekId Int
+  tagId  Int
+  week   Week @relation(fields: [weekId], references: [id])
+  tag    Tag  @relation(fields: [tagId], references: [id])
+
+  @@id([weekId, tagId])
+}
+
+model BuildLogEntry {
+  id        Int      @id @default(autoincrement())
+  content   String
+  weekId    Int      @unique
+  week      Week     @relation(fields: [weekId], references: [id])
+  updatedAt DateTime @updatedAt
+}
+
+model Bookmark {
+  id        Int      @id @default(autoincrement())
+  url       String
+  label     String?
+  weekId    Int?
+  tagId     Int?
+  week      Week?    @relation(fields: [weekId], references: [id])
+  tag       Tag?     @relation(fields: [tagId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model ReviewResponse {
+  id        Int      @id @default(autoincrement())
+  weekId    Int
+  prompt    String
+  response  String
+  week      Week     @relation(fields: [weekId], references: [id])
+  updatedAt DateTime @updatedAt
+
+  @@unique([weekId, prompt])
+}
+
+model ReviewReminder {
+  id         Int      @id @default(autoincrement())
+  weekId     Int
+  nextReview DateTime
+  interval   Int      @default(1)
+  confidence Int      @default(3)
+  week       Week     @relation(fields: [weekId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+
+model Achievement {
+  id       Int      @id @default(autoincrement())
+  key      String   @unique
+  name     String
+  icon     String
+  earnedAt DateTime @default(now())
+}
+
+model WeeklyChallenge {
+  id         Int      @id @default(autoincrement())
+  weekNumber Int
+  title      String
+  target     Int
+  current    Int      @default(0)
+  isComplete Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
