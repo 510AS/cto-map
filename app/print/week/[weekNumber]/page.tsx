@@ -54,7 +54,7 @@ export default async function PrintWeekPage({ params }: Props) {
             <p className="text-sm text-gray-600 mt-1">{week.phase.badge} {week.phase.name}</p>
           </div>
           <div className="text-right text-sm text-gray-500">
-            <p>CTO Learning Helper</p>
+            <p>CTO Map</p>
             <p>52-Week Curriculum</p>
           </div>
         </div>

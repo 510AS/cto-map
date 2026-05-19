@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The Day Task Checklist feature adds granular task tracking to each study day in the CTO Learning Helper application. Currently, each day has two high-level tasks (Learn and Build) that can be toggled complete. This feature introduces a detailed checklist of sub-tasks within each day, allowing users to break down their Learn and Build tasks into smaller, actionable items and track progress at a finer level of granularity.
+The Day Task Checklist feature adds granular task tracking to each study day in the CTO Map application. Currently, each day has two high-level tasks (Learn and Build) that can be toggled complete. This feature introduces a detailed checklist of sub-tasks within each day, allowing users to break down their Learn and Build tasks into smaller, actionable items and track progress at a finer level of granularity.
 
 ## Glossary
 

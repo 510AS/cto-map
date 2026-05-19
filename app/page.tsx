@@ -28,7 +28,7 @@ export default async function DashboardPage() {
         <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border border-blue-200 dark:border-blue-800 rounded-2xl p-10 max-w-md w-full shadow-lg">
           <div className="text-5xl mb-4">🚀</div>
           <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-3">
-            Welcome to CTO Learning Helper
+            Welcome to CTO Map
           </h1>
           <p className="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
             Set your curriculum start date to begin tracking your 52-week journey to Technical CTO mastery.

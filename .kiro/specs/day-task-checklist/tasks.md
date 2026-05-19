@@ -2,7 +2,7 @@
 
 ## Overview
 
-This plan implements granular sub-task tracking for each study day in the CTO Learning Helper. The implementation follows an incremental approach: data layer first (Prisma model, types), then core logic (completion calculator, suggestion parser), then API routes, then UI components, and finally integration/wiring. Each step builds on the previous and ends with everything connected.
+This plan implements granular sub-task tracking for each study day in the CTO Map. The implementation follows an incremental approach: data layer first (Prisma model, types), then core logic (completion calculator, suggestion parser), then API routes, then UI components, and finally integration/wiring. Each step builds on the previous and ends with everything connected.
 
 ## Tasks
 

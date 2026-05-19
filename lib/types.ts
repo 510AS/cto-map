@@ -1,5 +1,5 @@
 /**
- * Shared TypeScript interfaces used across the CTO Learning Helper app.
+ * Shared TypeScript interfaces used across the CTO Map app.
  *
  * These types represent the application's domain model and are used by
  * components, API routes, and utility functions.

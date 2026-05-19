@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import { useProgress } from "@/lib/progress-context";
 import ThemeToggle from "@/components/ThemeToggle";
 import XPBar from "@/components/XPBar";
@@ -290,7 +291,54 @@ export function Navigation({ variant }: { variant: "sidebar" | "bottom" }) {
         <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
           {state.totalCompletedDays}/{state.totalDays} days • {state.overallPct}%
         </div>
+
+        {/* User profile section */}
+        <UserMenu />
       </div>
     </nav>
+  );
+}
+
+function UserMenu() {
+  const { data: session } = useSession();
+
+  if (!session?.user) return null;
+
+  return (
+    <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+      <Link
+        href="/profile"
+        className="flex items-center gap-2 min-h-[44px] px-2 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+      >
+        {session.user.image ? (
+          <img
+            src={session.user.image}
+            alt=""
+            className="w-7 h-7 rounded-full"
+          />
+        ) : (
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+            {(session.user.name || session.user.email || "U")[0].toUpperCase()}
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">
+            {session.user.name || "User"}
+          </p>
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate">
+            {session.user.email}
+          </p>
+        </div>
+      </Link>
+      <button
+        onClick={() => signOut({ callbackUrl: "/auth/login" })}
+        className="flex items-center gap-2 min-h-[44px] min-w-[44px] w-full px-2 py-2 mt-1 rounded-lg text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+        Sign out
+      </button>
+    </div>
   );
 }

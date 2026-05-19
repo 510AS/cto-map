@@ -1,5 +1,5 @@
 /**
- * Pure calculation functions for the CTO Learning Helper.
+ * Pure calculation functions for the CTO Map.
  *
  * All functions in this module are pure — no side effects, no database access.
  * They operate solely on their inputs and return deterministic results.

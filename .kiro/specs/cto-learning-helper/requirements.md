@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The CTO Learning Helper is a personal, locally-hosted Next.js web application that helps a single user track progress through a 52-week Technical CTO Mastery curriculum. The app is seeded from an existing HTML file (`technical_cto_mastery_final.html`) that contains all 52 weeks of structured learning data. It runs on a laptop and is accessible from a mobile device over home WiFi.
+The CTO Map is a personal, locally-hosted Next.js web application that helps a single user track progress through a 52-week Technical CTO Mastery curriculum. The app is seeded from an existing HTML file (`technical_cto_mastery_final.html`) that contains all 52 weeks of structured learning data. It runs on a laptop and is accessible from a mobile device over home WiFi.
 
 The app provides a current-week dashboard, daily task views, progress tracking, streak monitoring, notes, a build log, resource bookmarks, weekly review prompts, a SaaS evolution timeline, and tag-based filtering — all backed by SQLite via Prisma.
 
@@ -10,7 +10,7 @@ The app provides a current-week dashboard, daily task views, progress tracking, 
 
 ## Glossary
 
-- **App**: The CTO Learning Helper Next.js application.
+- **App**: The CTO Map Next.js application.
 - **Curriculum**: The full 52-week Technical CTO Mastery learning plan.
 - **Phase**: A named group of weeks within the Curriculum (e.g., "Level 1 — Senior Backend Engineer").
 - **Week**: One of the 52 curriculum weeks, each containing a title, tags, days, a goal, and a SaaS evolution note.

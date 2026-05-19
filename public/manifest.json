@@ -1,6 +1,6 @@
 {
-  "name": "CTO Learning Helper",
-  "short_name": "CTO Helper",
+  "name": "CTO Map",
+  "short_name": "CTO Map",
   "description": "Track progress through the 52-week Technical CTO Mastery curriculum",
   "start_url": "/",
   "display": "standalone",

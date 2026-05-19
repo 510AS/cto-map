@@ -1,8 +1,8 @@
-# Design Document — CTO Learning Helper
+# Design Document — CTO Map
 
 ## Overview
 
-The CTO Learning Helper is a single-user, locally-hosted Next.js 14 (App Router) web application. It tracks progress through a 52-week Technical CTO Mastery curriculum, seeded from an existing HTML file. The app runs on a laptop bound to `0.0.0.0` and is accessible from mobile devices over home WiFi. All data is persisted in SQLite via Prisma. No authentication is required.
+The CTO Map is a single-user, locally-hosted Next.js 14 (App Router) web application. It tracks progress through a 52-week Technical CTO Mastery curriculum, seeded from an existing HTML file. The app runs on a laptop bound to `0.0.0.0` and is accessible from mobile devices over home WiFi. All data is persisted in SQLite via Prisma. No authentication is required.
 
 ---
 
