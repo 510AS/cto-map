@@ -302,6 +302,8 @@ function AiSettingsSection() {
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string; latency?: string } | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [loadingModels, setLoadingModels] = useState(false);
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -313,6 +315,10 @@ function AiSettingsSection() {
           setProvider(data.provider);
           setModel(data.model);
           setHasApiKey(data.hasApiKey);
+          // Fetch available models if API key is configured
+          if (data.hasApiKey) {
+            fetchAvailableModels();
+          }
         }
       } catch {
         // Silently fail
@@ -329,7 +335,7 @@ function AiSettingsSection() {
     setTestResult(null);
     try {
       const finalModel = useCustomModelInput ? customModel : model;
-      const body: Record<string, string> = { provider, model: finalModel };
+      const body: Record<string, string> = { provider, model: finalModel || model };
       if (apiKey) body.apiKey = apiKey;
 
       const res = await fetch("/api/ai-settings", {
@@ -343,6 +349,10 @@ function AiSettingsSection() {
         setHasApiKey(data.hasApiKey);
         setApiKey("");
         showToast("AI settings saved!", "success");
+        // Fetch available models after saving
+        if (data.hasApiKey) {
+          fetchAvailableModels();
+        }
       } else {
         showToast("Failed to save AI settings", "error");
       }
@@ -350,6 +360,23 @@ function AiSettingsSection() {
       showToast("Failed to save AI settings", "error");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function fetchAvailableModels() {
+    setLoadingModels(true);
+    try {
+      const res = await fetch("/api/ai-settings/models");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.models && data.models.length > 0) {
+          setAvailableModels(data.models);
+        }
+      }
+    } catch {
+      // Silently fail, keep static suggestions
+    } finally {
+      setLoadingModels(false);
     }
   }
 
@@ -415,6 +442,7 @@ function AiSettingsSection() {
             setModel(modelOptions[newProvider]?.[0] || "");
             setCustomModel("");
             setTestResult(null);
+            setAvailableModels([]);
           }}
           className="min-h-[44px] w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
         >
@@ -441,32 +469,39 @@ function AiSettingsSection() {
         <label htmlFor="ai-model" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Model
         </label>
-        {useCustomModelInput ? (
-          <input
-            id="ai-model"
-            type="text"
-            value={customModel}
-            onChange={(e) => setCustomModel(e.target.value)}
-            placeholder="Enter model name (e.g., gpt-4o-mini)"
-            className="min-h-[44px] w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-          />
-        ) : (
-          <select
-            id="ai-model"
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            className="min-h-[44px] w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-          >
-            {(modelOptions[provider] || []).map((m) => (
-              <option key={m} value={m}>{m}</option>
-            ))}
-          </select>
-        )}
-        {(provider === "openrouter" || provider === "huggingface") && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Or type a custom model name in the field above after selecting &quot;Custom&quot;.
-          </p>
-        )}
+        <input
+          id="ai-model"
+          type="text"
+          list="model-suggestions"
+          value={useCustomModelInput ? customModel : model}
+          onChange={(e) => {
+            const val = e.target.value;
+            if (useCustomModelInput) {
+              setCustomModel(val);
+            } else {
+              setModel(val);
+            }
+          }}
+          placeholder="Select or type a model name"
+          className="min-h-[44px] w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+        />
+        <datalist id="model-suggestions">
+          {(availableModels.length > 0 ? availableModels : modelOptions[provider] || []).map((m) => (
+            <option key={m} value={m} />
+          ))}
+        </datalist>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          {loadingModels ? (
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin inline-block" />
+              Loading available models...
+            </span>
+          ) : availableModels.length > 0 ? (
+            `${availableModels.length} models available from your ${provider} account. Pick or type custom.`
+          ) : (
+            "Pick from suggestions or type any model name."
+          )}
+        </p>
       </div>
 
       {/* API Key */}
