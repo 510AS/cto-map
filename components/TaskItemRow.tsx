@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { TaskItem } from '@/lib/types';
 import { useToast } from '@/lib/toast-context';
+import UnderstandingNotes from './UnderstandingNotes';
 
 interface TaskItemRowProps {
   item: TaskItem & { resourceUrl?: string | null; priority?: string | null; actualMinutes?: number | null };
@@ -20,6 +21,8 @@ export default function TaskItemRow({ item, onToggled }: TaskItemRowProps) {
   const [toggling, setToggling] = useState(false);
   const [showActualInput, setShowActualInput] = useState(false);
   const [actualMinutes, setActualMinutes] = useState('');
+  const [showNotes, setShowNotes] = useState(false);
+  const [latestAiScore, setLatestAiScore] = useState<number | null>(null);
   const { showToast } = useToast();
 
   async function handleToggle() {
@@ -205,6 +208,26 @@ export default function TaskItemRow({ item, onToggled }: TaskItemRowProps) {
           <span className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
             Actual: {(item as any).actualMinutes}m
           </span>
+        )}
+
+        {/* Understanding Notes toggle */}
+        <button
+          type="button"
+          onClick={() => setShowNotes(!showNotes)}
+          className="flex items-center gap-1 mt-1.5 text-[11px] text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+        >
+          <svg className={`w-3 h-3 transition-transform ${showNotes ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+          {latestAiScore != null ? (
+            <span>Notes ({latestAiScore}% understanding)</span>
+          ) : (
+            <span>Write what you learned</span>
+          )}
+        </button>
+
+        {showNotes && (
+          <UnderstandingNotes taskItemId={item.id} taskTitle={item.title} />
         )}
       </div>
     </div>

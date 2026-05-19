@@ -141,6 +141,7 @@ model TaskItem {
   createdAt     DateTime @default(now())
   dayId         Int
   day           Day      @relation(fields: [dayId], references: [id])
+  understandingNotes UnderstandingNote[]
 
   @@index([dayId, category, sortOrder])
 }
@@ -217,4 +218,30 @@ model WeeklyChallenge {
   current    Int      @default(0)
   isComplete Boolean  @default(false)
   createdAt  DateTime @default(now())
+}
+
+// ─── Understanding Notes + AI Review ───────────────────────────
+
+model UnderstandingNote {
+  id              Int      @id @default(autoincrement())
+  content         String   @db.Text    // User's explanation of what they learned
+  confidence      Int      @default(3) // Self-assessment 1-5 before AI review
+  aiScore         Int?     // AI-assigned understanding percentage (0-100)
+  aiFeedback      String?  @db.Text    // AI feedback: what's right, what's missing
+  aiSuggestions   String?  @db.Text    // AI suggested questions to explore
+  reviewedAt      DateTime?            // When AI last reviewed this note
+  taskItemId      Int
+  taskItem        TaskItem @relation(fields: [taskItemId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([taskItemId])
+}
+
+model AiSettings {
+  id        Int      @id @default(1)
+  provider  String   @default("openai") // "openai", "anthropic", "google"
+  apiKey    String?  @db.Text           // Encrypted in production
+  model     String   @default("gpt-4o-mini")
+  updatedAt DateTime @updatedAt
 }

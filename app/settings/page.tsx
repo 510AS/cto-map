@@ -271,6 +271,9 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* AI Settings */}
+      <AiSettingsSection />
+
       {/* Achievements Link */}
       <div className="card p-6 max-w-md space-y-4">
         <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide">Achievements</h2>
@@ -285,5 +288,145 @@ export default function SettingsPage() {
         </a>
       </div>
     </div>
+  );
+}
+
+
+function AiSettingsSection() {
+  const [provider, setProvider] = useState("openai");
+  const [model, setModel] = useState("gpt-4o-mini");
+  const [apiKey, setApiKey] = useState("");
+  const [hasApiKey, setHasApiKey] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const { showToast } = useToast();
+
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const res = await fetch("/api/ai-settings");
+        if (res.ok) {
+          const data = await res.json();
+          setProvider(data.provider);
+          setModel(data.model);
+          setHasApiKey(data.hasApiKey);
+        }
+      } catch {
+        // Silently fail
+      } finally {
+        setLoaded(true);
+      }
+    }
+    fetchSettings();
+  }, []);
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const body: Record<string, string> = { provider, model };
+      if (apiKey) body.apiKey = apiKey;
+
+      const res = await fetch("/api/ai-settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setHasApiKey(data.hasApiKey);
+        setApiKey("");
+        showToast("AI settings saved!", "success");
+      } else {
+        showToast("Failed to save AI settings", "error");
+      }
+    } catch {
+      showToast("Failed to save AI settings", "error");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const modelOptions: Record<string, string[]> = {
+    openai: ["gpt-4o-mini", "gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"],
+    anthropic: ["claude-sonnet-4-20250514", "claude-3-5-haiku-20241022", "claude-3-opus-20240229"],
+    google: ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash"],
+  };
+
+  if (!loaded) return null;
+
+  return (
+    <form onSubmit={handleSave} className="card p-6 max-w-md space-y-5">
+      <div>
+        <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-3">AI Review</h2>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+          Configure the AI provider used to review your understanding notes.
+        </p>
+      </div>
+
+      {/* Provider */}
+      <div>
+        <label htmlFor="ai-provider" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Provider
+        </label>
+        <select
+          id="ai-provider"
+          value={provider}
+          onChange={(e) => {
+            setProvider(e.target.value);
+            setModel(modelOptions[e.target.value]?.[0] || "");
+          }}
+          className="min-h-[44px] w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+        >
+          <option value="openai">OpenAI</option>
+          <option value="anthropic">Anthropic (Claude)</option>
+          <option value="google">Google (Gemini)</option>
+        </select>
+      </div>
+
+      {/* Model */}
+      <div>
+        <label htmlFor="ai-model" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Model
+        </label>
+        <select
+          id="ai-model"
+          value={model}
+          onChange={(e) => setModel(e.target.value)}
+          className="min-h-[44px] w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+        >
+          {(modelOptions[provider] || []).map((m) => (
+            <option key={m} value={m}>{m}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* API Key */}
+      <div>
+        <label htmlFor="ai-api-key" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          API Key {hasApiKey && <span className="text-green-600 dark:text-green-400 text-xs">(configured ✓)</span>}
+        </label>
+        <input
+          id="ai-api-key"
+          type="password"
+          value={apiKey}
+          onChange={(e) => setApiKey(e.target.value)}
+          placeholder={hasApiKey ? "••••••••••••••••" : "Enter your API key"}
+          className="min-h-[44px] w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+        />
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          Your key is stored securely and never shared.
+        </p>
+      </div>
+
+      <button
+        type="submit"
+        disabled={saving}
+        className="min-h-[44px] w-full px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium rounded-lg hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+      >
+        {saving ? "Saving..." : "Save AI Settings"}
+      </button>
+    </form>
   );
 }
