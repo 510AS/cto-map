@@ -1,0 +1,14 @@
+Project: CTO Map — 52-week Technical CTO curriculum tracker
+Stack: Next.js 14 (App Router), TypeScript, Prisma/SQLite, Tailwind CSS (dark mode)
+
+RULES:
+- ALL UI needs dark mode (dark: Tailwind classes on every element)
+- ALL buttons/links need min-h-[44px] min-w-[44px]
+- Client components: add 'use client'; at top
+- Use existing contexts: useToast(), useProgress(), useTheme()
+- /api/task-items returns { learn: [], build: [] } NOT flat array
+- After TaskItem changes → calculateDayCompletion() → update Day → check Week
+- Use useRef for callback props (prevents infinite loops)
+- npm install --legacy-peer-deps
+- Types: lib/types.ts | Validators: lib/validators.ts
+- CSS utilities: .card, .stat-card, .badge-blue, .badge-green, .skeleton

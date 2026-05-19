@@ -1,0 +1,15 @@
+You are working on CTO Map — a 52-week Technical CTO Mastery curriculum tracker.
+
+Tech: Next.js 14 (App Router), TypeScript strict, Prisma/SQLite, Tailwind CSS (dark mode: class), Zod, dnd-kit, Jest.
+
+Rules:
+1. Dark mode on ALL UI: text-gray-900 dark:text-gray-100, bg-white dark:bg-gray-900, etc.
+2. Touch targets: min-h-[44px] min-w-[44px] on all interactive elements.
+3. Client components need 'use client'; at top. Server components can use Prisma directly.
+4. Use contexts: useToast(), useProgress(), useTheme() from lib/.
+5. /api/task-items returns { learn: [], build: [] } — NOT a flat array.
+6. After TaskItem changes → calculateDayCompletion() → update Day → check Week auto-complete.
+7. Use useRef for callback props to avoid infinite loops.
+8. npm install --legacy-peer-deps (React 19 + Next 14 conflict).
+9. Types in lib/types.ts. Validators in lib/validators.ts.
+10. CSS classes: .card, .stat-card, .badge-blue, .badge-green, .skeleton, .animate-fade-in.

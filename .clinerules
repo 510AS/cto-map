@@ -1,0 +1,29 @@
+# CTO Map — Cline/Roo Rules
+
+## Project
+52-week Technical CTO curriculum tracker. Next.js 14 App Router, TypeScript, Prisma/SQLite, Tailwind CSS.
+
+## Must Do
+- Add dark: variants to ALL Tailwind classes (text, bg, border, placeholder)
+- min-h-[44px] min-w-[44px] on buttons, links, checkboxes
+- 'use client'; on components with hooks/state/events
+- Use useToast() for notifications, useProgress() for global state
+- After task completion changes: calculateDayCompletion() → update Day → check Week
+- npm install --legacy-peer-deps
+
+## Must Not
+- Don't use Pages Router (no getServerSideProps)
+- Don't use any type — use interfaces from lib/types.ts
+- Don't put callback props in useEffect deps (use useRef)
+- Don't import prisma in client components
+- Don't use external UI libraries (Tailwind only)
+
+## Key Files
+- prisma/schema.prisma — database schema
+- lib/types.ts — all TypeScript interfaces
+- lib/progress-context.tsx — global progress state
+- lib/completion-calculator.ts — day completion logic
+- app/Providers.tsx — context providers wrapper
+
+## API Note
+GET /api/task-items?dayId=X returns { learn: TaskItem[], build: TaskItem[] } not a flat array.
