@@ -11,7 +11,7 @@ A 52-week Technical CTO Mastery curriculum tracker. Users complete daily Learn/B
 | Next.js | 14 (App Router) | Framework |
 | TypeScript | 6.x (strict) | Language |
 | Prisma | 5.22 | ORM |
-| SQLite | - | Database |
+| PostgreSQL | - | Database (Vercel Postgres / Neon) |
 | Tailwind CSS | 3.4 | Styling |
 | Zod | 3.x | Validation |
 | dnd-kit | - | Drag and drop |
@@ -93,10 +93,11 @@ Always use: `npm install --legacy-peer-deps` (React 19 + Next 14 conflict)
 ## Commands
 ```bash
 npm install --legacy-peer-deps  # Install deps
-npx prisma db push              # Sync schema to DB
+npx prisma db push              # Sync schema to DB (dev)
 npx prisma migrate dev          # Create migration
 npm run db:seed                 # Seed curriculum data
 npx next dev                    # Dev server (port 3000)
+npm run build                   # Production build
 npm test                        # Run tests
 ```
 

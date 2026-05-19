@@ -5,8 +5,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Settings {
@@ -28,11 +29,11 @@ model Week {
   id              Int              @id @default(autoincrement())
   weekNumber      Int              @unique
   title           String
-  goal            String
-  saasEvolution   String
+  goal            String           @db.Text
+  saasEvolution   String           @db.Text
   isComplete      Boolean          @default(false)
   hoursLogged     Float?
-  note            String?
+  note            String?          @db.Text
   phaseId         Int
   phase           Phase            @relation(fields: [phaseId], references: [id])
   days            Day[]
@@ -46,8 +47,8 @@ model Week {
 model Day {
   id            Int        @id @default(autoincrement())
   dayLabel      String
-  learnTask     String
-  buildTask     String
+  learnTask     String     @db.Text
+  buildTask     String     @db.Text
   sortOrder     Int
   isComplete    Boolean    @default(false)
   learnComplete Boolean    @default(false)
@@ -55,8 +56,8 @@ model Day {
   skipped       Boolean    @default(false)
   confidence    Int?
   completedAt   DateTime?
-  note          String?
-  reflection    String?
+  note          String?    @db.Text
+  reflection    String?    @db.Text
   weekId        Int
   week          Week       @relation(fields: [weekId], references: [id])
   taskItems     TaskItem[]
@@ -71,7 +72,7 @@ model TaskItem {
   isComplete    Boolean  @default(false)
   sortOrder     Int
   timeEstimate  Int?     // minutes, nullable
-  note          String?  // max 500 chars, enforced at API level
+  note          String?  @db.Text // max 500 chars, enforced at API level
   resourceUrl   String?
   priority      String?  // "easy", "medium", "hard", or null
   actualMinutes Int?
@@ -100,7 +101,7 @@ model WeekTag {
 
 model BuildLogEntry {
   id        Int      @id @default(autoincrement())
-  content   String
+  content   String   @db.Text
   weekId    Int      @unique
   week      Week     @relation(fields: [weekId], references: [id])
   updatedAt DateTime @updatedAt
@@ -121,7 +122,7 @@ model ReviewResponse {
   id        Int      @id @default(autoincrement())
   weekId    Int
   prompt    String
-  response  String
+  response  String   @db.Text
   week      Week     @relation(fields: [weekId], references: [id])
   updatedAt DateTime @updatedAt
 
@@ -137,7 +138,6 @@ model ReviewReminder {
   week       Week     @relation(fields: [weekId], references: [id])
   createdAt  DateTime @default(now())
 }
-
 
 model Achievement {
   id       Int      @id @default(autoincrement())
