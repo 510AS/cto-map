@@ -295,9 +295,12 @@ export default function SettingsPage() {
 function AiSettingsSection() {
   const [provider, setProvider] = useState("openai");
   const [model, setModel] = useState("gpt-4o-mini");
+  const [customModel, setCustomModel] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [hasApiKey, setHasApiKey] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{ success: boolean; message: string; latency?: string } | null>(null);
   const [loaded, setLoaded] = useState(false);
   const { showToast } = useToast();
 
@@ -323,8 +326,10 @@ function AiSettingsSection() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
+    setTestResult(null);
     try {
-      const body: Record<string, string> = { provider, model };
+      const finalModel = useCustomModelInput ? customModel : model;
+      const body: Record<string, string> = { provider, model: finalModel };
       if (apiKey) body.apiKey = apiKey;
 
       const res = await fetch("/api/ai-settings", {
@@ -348,11 +353,42 @@ function AiSettingsSection() {
     }
   }
 
+  async function handleTest() {
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const res = await fetch("/api/ai-settings/test", { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        setTestResult({ success: true, message: `Connected! Response in ${data.latency}`, latency: data.latency });
+      } else {
+        setTestResult({ success: false, message: data.error || "Connection failed" });
+      }
+    } catch {
+      setTestResult({ success: false, message: "Network error" });
+    } finally {
+      setTesting(false);
+    }
+  }
+
   const modelOptions: Record<string, string[]> = {
     openai: ["gpt-4o-mini", "gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"],
     anthropic: ["claude-sonnet-4-20250514", "claude-3-5-haiku-20241022", "claude-3-opus-20240229"],
     google: ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash"],
+    openrouter: ["openai/gpt-4o-mini", "anthropic/claude-3.5-sonnet", "google/gemini-flash-1.5", "meta-llama/llama-3.1-70b-instruct", "mistralai/mistral-large-latest"],
+    huggingface: ["meta-llama/Llama-3.1-8B-Instruct", "mistralai/Mistral-7B-Instruct-v0.3", "microsoft/Phi-3-mini-4k-instruct"],
   };
+
+  const providerLabels: Record<string, string> = {
+    openai: "OpenAI",
+    anthropic: "Anthropic (Claude)",
+    google: "Google (Gemini)",
+    openrouter: "OpenRouter",
+    huggingface: "Hugging Face",
+    custom: "Custom (OpenAI-compatible)",
+  };
+
+  const useCustomModelInput = provider === "custom" || !modelOptions[provider];
 
   if (!loaded) return null;
 
@@ -374,15 +410,30 @@ function AiSettingsSection() {
           id="ai-provider"
           value={provider}
           onChange={(e) => {
-            setProvider(e.target.value);
-            setModel(modelOptions[e.target.value]?.[0] || "");
+            const newProvider = e.target.value;
+            setProvider(newProvider);
+            setModel(modelOptions[newProvider]?.[0] || "");
+            setCustomModel("");
+            setTestResult(null);
           }}
           className="min-h-[44px] w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
         >
-          <option value="openai">OpenAI</option>
-          <option value="anthropic">Anthropic (Claude)</option>
-          <option value="google">Google (Gemini)</option>
+          {Object.entries(providerLabels).map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
         </select>
+        {provider === "openrouter" && (
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Access 100+ models with one API key. Get yours at{" "}
+            <a href="https://openrouter.ai" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">openrouter.ai</a>
+          </p>
+        )}
+        {provider === "huggingface" && (
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Free inference API. Get your token at{" "}
+            <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">huggingface.co/settings/tokens</a>
+          </p>
+        )}
       </div>
 
       {/* Model */}
@@ -390,16 +441,32 @@ function AiSettingsSection() {
         <label htmlFor="ai-model" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Model
         </label>
-        <select
-          id="ai-model"
-          value={model}
-          onChange={(e) => setModel(e.target.value)}
-          className="min-h-[44px] w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-        >
-          {(modelOptions[provider] || []).map((m) => (
-            <option key={m} value={m}>{m}</option>
-          ))}
-        </select>
+        {useCustomModelInput ? (
+          <input
+            id="ai-model"
+            type="text"
+            value={customModel}
+            onChange={(e) => setCustomModel(e.target.value)}
+            placeholder="Enter model name (e.g., gpt-4o-mini)"
+            className="min-h-[44px] w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+          />
+        ) : (
+          <select
+            id="ai-model"
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+            className="min-h-[44px] w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+          >
+            {(modelOptions[provider] || []).map((m) => (
+              <option key={m} value={m}>{m}</option>
+            ))}
+          </select>
+        )}
+        {(provider === "openrouter" || provider === "huggingface") && (
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Or type a custom model name in the field above after selecting &quot;Custom&quot;.
+          </p>
+        )}
       </div>
 
       {/* API Key */}
@@ -411,7 +478,7 @@ function AiSettingsSection() {
           id="ai-api-key"
           type="password"
           value={apiKey}
-          onChange={(e) => setApiKey(e.target.value)}
+          onChange={(e) => { setApiKey(e.target.value); setTestResult(null); }}
           placeholder={hasApiKey ? "••••••••••••••••" : "Enter your API key"}
           className="min-h-[44px] w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
         />
@@ -420,13 +487,40 @@ function AiSettingsSection() {
         </p>
       </div>
 
-      <button
-        type="submit"
-        disabled={saving}
-        className="min-h-[44px] w-full px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium rounded-lg hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
-      >
-        {saving ? "Saving..." : "Save AI Settings"}
-      </button>
+      {/* Test Result */}
+      {testResult && (
+        <div className={`p-3 rounded-lg text-sm ${
+          testResult.success
+            ? "bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300"
+            : "bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300"
+        }`} role="alert">
+          {testResult.success ? "✓ " : "✗ "}{testResult.message}
+        </div>
+      )}
+
+      {/* Buttons */}
+      <div className="flex gap-3">
+        <button
+          type="submit"
+          disabled={saving}
+          className="min-h-[44px] flex-1 px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium rounded-lg hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+        >
+          {saving ? "Saving..." : "Save"}
+        </button>
+        <button
+          type="button"
+          onClick={handleTest}
+          disabled={testing || !hasApiKey}
+          className="min-h-[44px] px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+        >
+          {testing ? (
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 border-2 border-gray-500 border-t-transparent rounded-full animate-spin" />
+              Testing...
+            </span>
+          ) : "Test Connection"}
+        </button>
+      </div>
     </form>
   );
 }

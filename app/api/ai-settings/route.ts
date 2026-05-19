@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const updateSchema = z.object({
-  provider: z.enum(["openai", "anthropic", "google"]).optional(),
+  provider: z.enum(["openai", "anthropic", "google", "openrouter", "huggingface", "custom"]).optional(),
   apiKey: z.string().optional(),
   model: z.string().min(1).optional(),
 });

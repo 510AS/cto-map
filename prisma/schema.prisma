@@ -240,7 +240,7 @@ model UnderstandingNote {
 
 model AiSettings {
   id        Int      @id @default(1)
-  provider  String   @default("openai") // "openai", "anthropic", "google"
+  provider  String   @default("openai") // "openai", "anthropic", "google", "openrouter", "huggingface", "custom"
   apiKey    String?  @db.Text           // Encrypted in production
   model     String   @default("gpt-4o-mini")
   updatedAt DateTime @updatedAt
